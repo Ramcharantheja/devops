@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entertainment Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        .movie, .song, .promotion {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .movie img, .song img {
+            width: 100px;
+            height: 150px;
+            margin-right: 15px;
+            border-radius: 5px;
+        }
+        .movie-details, .song-details {
+            display: flex;
+            align-items: center;
+        }
+        .movie h3, .song h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .promotion {
+            background-color: #f2f2f2;
+        }
+        .promotion h3 {
+            margin: 0;
+            color: #007BFF;
+        }
+        .trailer-button {
+            background-color: #ff5722;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .trailer-button:hover {
+            background-color: #e64a19;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Entertainment Hub</h1>
+    <p>Your source for the latest movies, songs, promotions, and trailers</p>
+</header>
+
+<div class="container">
+    <h2>Latest Movies</h2>
+    <div id="movies-list"></div>
+
+    <h2>Trending Songs</h2>
+    <div id="songs-list"></div>
+
+    <h2>Latest Promotions</h2>
+    <div id="promotions-list">
+        <div class="promotion">
+            <h3>🎬 50% off on movie tickets this weekend!</h3>
+            <p>Use code MOVIE50 to get 50% off on all movie tickets. Don't miss out!</p>
+        </div>
+        <div class="promotion">
+            <h3>🎶 Free concert tickets for top song fans this week!</h3>
+            <p>Follow your favorite artists to get a chance to win free concert tickets!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// API Keys (Replace with your own)
+const TMDB_API_KEY = 'your_tmdb_api_key';
+const YOUTUBE_API_KEY = 'your_youtube_api_key';
+
+// Fetch Latest Movies
+function fetchLatestMovies() {
+    const url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=en-US`;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const moviesList = document.getElementById('movies-list');
+            data.results.forEach(movie => {
+                const movieItem = document.createElement('div');
+                movieItem.classList.add('movie');
+                movieItem.innerHTML = `
+                    <div class="movie-details">
+                        <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title}">
+                        <div>
+                            <h3>${movie.title}</h3>
+                            <p>${movie.release_date}</p>
+                            <p>${movie.overview}</p>
+                            <button class="trailer-button" onclick="openTrailer('${movie.id}')">Watch Trailer</button>
+                        </div>
+                    </div>
+                `;
+                moviesList.appendChild(movieItem);
+            });
+        });
+}
+
+// Fetch Trending Songs
+function fetchTrendingSongs() {
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&chart=mostPopular&videoCategoryId=10&regionCode=US&key=${YOUTUBE_API_KEY}`;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const songsList = document.getElementById('songs-list');
+            data.items.forEach(item => {
+                const songItem = document.createElement('div');
+                songItem.classList.add('song');
+                songItem.innerHTML = `
+                    <div class="song-details">
+                        <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                        <div>
+                            <h3>${item.snippet.title}</h3>
+                            <p>by ${item.snippet.channelTitle}</p>
+                            <button class="trailer-button" onclick="openSong('${item.id.videoId}')">Watch</button>
+                        </div>
+                    </div>
+                `;
+                songsList.appendChild(songItem);
+            });
+        });
+}
+
+// Open Movie Trailer
+function openTrailer(movieId) {
+    const url = `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${TMDB_API_KEY}`;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.results.length > 0) {
+                const trailerKey = data.results[0].key;
+                window.open(`https://www.youtube.com/watch?v=${trailerKey}`, '_blank');
+            } else {
+                alert('No trailer available for this movie.');
+            }
+        });
+}
+
+// Open Song Video
+function openSong(videoId) {
+    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+}
+
+// Load Data
+fetchLatestMovies();
+fetchTrendingSongs();
+</script>
+
+</body>
+</html>
